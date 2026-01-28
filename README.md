@@ -1,110 +1,75 @@
-# Cards
+# React + TypeScript + Vite
 
-A "card" in Dome enables you to extend the functionality of Dome. Each "card" is like a mini website (webapp) that you can build as per your needs. Each dome is made up of cards. By adding your custom card to your dome, you can extend it's functionality.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Card Directory Naming Convention
+Currently, two official plugins are available:
 
-Card directories must follow this naming pattern:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-```bash
-card-{card_name}
+## React Compiler
+
+The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+
+Note: This will impact Vite dev & build performances.
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-- The name must start with the word card
-- Followed by a dash -
-- Followed by your card’s name using snake_case
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-Example:
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-```bash
-card-hello_world_ng
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-## Branching
-
-card specific branches:
-
-`develop` for development
-`release` for card releases
-
-pushing to release branch will create releases for that specific card
-
-## Manifest
-
-Each card must include a `manifest-card.json` file in the card root directory.
-
-### Required fields
-
-| Key    | Description                                              |
-| ------ | -------------------------------------------------------- |
-| `name` | The display name of the card                             |
-| `iuid` | The card’s unique ID, generated when the card is created |
-
-The `iuid` is essential for building, identifying, and deploying your card within Dome.
-
-## Build
-
-Before releasing a card, ensure that it builds correctly.
-
-### Build Requirements
-
-- Production build output must be generated in one of the following directories:
-
-  - `dist/`
-  - `build/`
-- Your build pipeline must complete successfully
-
-### Build Pipeline Behavior
-
-When the build pipeline runs, it will:
-
-1. Move compiled files to:
-
-   ```bash
-   3rdparty/cards/{IUID}/
-   ```
-
-2. Generate a build descriptor file:
-
-   ```bash
-   build_output.{IUID}.{BUILD_TIMESTAMP}.{CARD_NAME}.txt
-   ```
-
-This descriptor can be used to verify or deploy that specific version.
-
----
-
-## Release
-
-Each card repository is required to use a **reusable GitHub Actions workflow** for releases.
-
-### Reusable Workflow
-
-Your card’s workflow file should reference the reusable workflow:
-
-```bash
-InTouchSO/cards-ci/.github/workflows/card-release.yml
-```
-
-The workflow must be referenced using a **tag**, allowing your card to:
-
-- Pin to a **known-good version**, or
-- Track the **latest stable release**
-
-### Example
-
-```yaml
-uses: InTouchSO/cards-ci/.github/workflows/card-release.yml@stable
-```
-
-You may replace `stable` with any version tag you want to lock to.
-
-### Release Behavior
-
-When you push to the `release` branch:
-
-- The reusable workflow builds the card
-- A new release is created for that card
-- Build artifacts are packaged according to the card pipeline rules
-
----
